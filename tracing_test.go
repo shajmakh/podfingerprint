@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"math/rand"
 	"testing"
+	"time"
 )
 
 func TestNamespacedNameString(t *testing.T) {
@@ -368,5 +369,19 @@ func TestStatusEqual(t *testing.T) {
 				t.Fatalf("got=%v expected=%v", got, tc.Expected)
 			}
 		})
+
+	}
+}
+
+func TestSeal(t *testing.T) {
+	st := MakeStatus("node-1")
+	st.Sign("PFPComputed")
+	start := time.Now()
+	time.Sleep(3 * time.Second)
+	end := time.Now()
+	expectedDuration := end.Sub(start)
+	st.Seal()
+	if st.Duration.Round(time.Second) != expectedDuration.Round(time.Second) {
+		t.Errorf("seal error: expected %v, got %v", expectedDuration, st.Duration)
 	}
 }

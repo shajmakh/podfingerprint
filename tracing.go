@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 )
 
 // NamespacedName is a Namespace/Name pair
@@ -67,6 +68,8 @@ type Status struct {
 	FingerprintComputed string           `json:"fingerprintComputed,omitempty"`
 	Pods                []NamespacedName `json:"pods,omitempty"`
 	NodeName            string           `json:"nodeName,omitempty"`
+	createTime          time.Time        `json:"createTime,omitempty"`
+	Duration            time.Duration    `json:"duration,omitempty"`
 }
 
 func (s Status) Equal(x Status) bool {
@@ -94,6 +97,11 @@ func MakeStatus(nodeName string) Status {
 	}
 }
 
+func (st *Status) Seal() {
+	t := time.Now()
+	st.Duration = t.Sub(st.createTime)
+}
+
 func (st *Status) Start(numPods int) {
 	st.Pods = make([]NamespacedName, 0, numPods)
 }
@@ -107,6 +115,7 @@ func (st *Status) Add(namespace, name string) {
 
 func (st *Status) Sign(computed string) {
 	st.FingerprintComputed = computed
+	st.createTime = time.Now()
 }
 
 func (st *Status) Check(expected string) {
